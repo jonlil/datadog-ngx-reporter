@@ -6,8 +6,6 @@ from datadog import statsd
 
 
 SAMPLE_RATE = 100
-avg_response_buffer = []
-http_status_buffer = defaultdict(list)
 
 # mapping between datadog and supervisord log levels
 METRIC_TYPES = {
@@ -68,10 +66,8 @@ def extract_method(obj):
         return ''
     return match.group(0)
 
-
 def is_http_status_loggable(obj):
     return 'status' in obj and (599 <= obj['status'] and 200 >= obj['status'])
-
 
 def get_http_status_metric_name(obj):
     status = obj['status']
@@ -99,25 +95,11 @@ def generate_http_status_metric(obj):
     metric_name = get_http_status_metric_name(obj)
     if not metric_name:
         return
-
-    http_status_buffer[metric_name] += 1
-    if should_flush_buffer(http_status_buffer[metric_name]):
-        statsd.increment(METRIC_TYPES[metric_name],
-                  value=http_status_buffer[metric_name],
-                  sample_rate=SAMPLE_RATE)
-        del http_status_buffer[metric_name]
-
-
-def average(data):
-    return sum(data)/float(len(data))
+    statsd.increment(METRIC_TYPES[metric_name], value=1, sample_rate=0.1)
 
 
 def generate_average_response_time_metric(obj):
-    avg_response_buffer.append(obj['request_time'])
-
-    if should_flush_buffer(avg_response_buffer):
-        statsd.gauge(METRIC_TYPES['AVERAGE_RESPONSE'], value=average(avg_response_buffer), sample_rate=SAMPLE_RATE)
-        del avg_response_buffer[:]
+    statsd.gauge(METRIC_TYPES['AVERAGE_RESPONSE'], value=obj['request_time'], sample_rate=0.1)
 
 
 metrics_to_report = [
@@ -134,7 +116,5 @@ def generate_nginx_metrics(line):
 
 if __name__ == "__main__":
     import sys
-    avg_response_buffer = []
-    http_status_buffer = defaultdict(int)
     for line in sys.stdin:
         generate_nginx_metrics(line)
