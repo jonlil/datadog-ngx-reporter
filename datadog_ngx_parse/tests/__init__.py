@@ -13,7 +13,7 @@ from dogstream_nginx_parse import (
 )
 
 
-LOG_FORMAT_TIME_COMBINED = '1.1.1.1 - - [01/Oct/2018:06:36:17 +0200] "GET /telephone/4 HTTP/1.1" 200 5 "-" "Outlook-i" 0.018 "domain.com"'
+LOG_FORMAT_TIME_COMBINED = '1.1.1.1 - - [01/Oct/2018:06:36:17 +0200] "GET /telephone/4 HTTP/1.1" 200 5 "-" "Outlook-i" 0.018 "domain.com" "upstream-name"'
 
 class TestNGiNXParse(unittest.TestCase):
     def test_should_find_remote_addr(self):
@@ -47,4 +47,3 @@ class TestNGiNXParse(unittest.TestCase):
         self.assertEqual('THREE_HUNDRED_STATUS', get_http_status_metric_name({'status': 300}))
         self.assertEqual('FOUR_HUNDRED_STATUS', get_http_status_metric_name({'status': 400}))
         self.assertEqual('FIVE_HUNDRED_STATUS', get_http_status_metric_name({'status': 500}))
-

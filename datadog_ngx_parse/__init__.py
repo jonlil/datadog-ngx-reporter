@@ -66,11 +66,13 @@ def extract_method(obj):
         return ''
     return match.group(0)
 
+
 def extract_tags(obj):
     _tags = []
     if not obj['proxy_host'] == '-':
        _tags.append("upstream:{}".format(obj['proxy_host']))
     return _tags
+
 
 def is_http_status_loggable(obj):
     return 'status' in obj and (599 <= obj['status'] and 200 >= obj['status'])
