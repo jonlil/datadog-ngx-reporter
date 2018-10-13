@@ -55,3 +55,9 @@ class TestNGiNXParse(unittest.TestCase):
         self.assertEqual('THREE_HUNDRED_STATUS', get_http_status_metric_name({'status': 300}))
         self.assertEqual('FOUR_HUNDRED_STATUS', get_http_status_metric_name({'status': 400}))
         self.assertEqual('FIVE_HUNDRED_STATUS', get_http_status_metric_name({'status': 500}))
+
+    def test_extract_tags(self):
+        normalized = normalize(self.parsed_log)
+        tags = extract_tags(normalized)
+
+        self.assertTrue('upstream:upstream-name' in tags)
