@@ -25,9 +25,11 @@ LOG_FORMAT_PATTERN = [
     ('request', '" '),
     ('status', ' '),
     ('body_bytes_sent', ' "'),
-    ('http_referer', '"'),
+    ('http_referer', '" "'),
     ('http_user_agent', '" '),
     ('request_time', ' "'),
+    ('host', '" "'),
+    ('proxy_host', '"'),
 ]
 
 
@@ -66,6 +68,12 @@ def extract_method(obj):
         return ''
     return match.group(0)
 
+def extract_tags(obj):
+    _tags = []
+    if not obj['proxy_host'] == '-':
+       _tags.append("upstream:{}".format(obj['proxy_host']))
+    return _tags
+
 def is_http_status_loggable(obj):
     return 'status' in obj and (599 <= obj['status'] and 200 >= obj['status'])
 
@@ -95,11 +103,22 @@ def generate_http_status_metric(obj):
     metric_name = get_http_status_metric_name(obj)
     if not metric_name:
         return
-    statsd.increment(METRIC_TYPES[metric_name], value=1, sample_rate=0.1)
+
+    statsd.increment(
+        METRIC_TYPES[metric_name],
+        value=1,
+        sample_rate=0.1,
+        tags=extract_tags(obj)
+    )
 
 
 def generate_average_response_time_metric(obj):
-    statsd.gauge(METRIC_TYPES['AVERAGE_RESPONSE'], value=obj['request_time'], sample_rate=0.1)
+    statsd.gauge(
+        METRIC_TYPES['AVERAGE_RESPONSE'],
+        value=obj['request_time'],
+        sample_rate=0.1,
+        tags=extract_tags(obj)
+    )
 
 
 metrics_to_report = [
