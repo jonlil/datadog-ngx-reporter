@@ -5,8 +5,6 @@ from collections import defaultdict
 from datadog import statsd
 
 
-SAMPLE_RATE = 100
-
 # mapping between datadog and supervisord log levels
 METRIC_TYPES = {
     'AVERAGE_RESPONSE': 'nginx.net.avg_response',
