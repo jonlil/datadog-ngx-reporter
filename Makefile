@@ -1,2 +1,2 @@
 test:
-	python -m unittest dogstream_nginx_parse.tests
+		pipenv run python -m unittest datadog_ngx_reporter.tests

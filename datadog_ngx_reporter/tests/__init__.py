@@ -1,7 +1,7 @@
 import unittest
 import pprint
 
-from dogstream_nginx_parse import (
+from datadog_ngx_reporter import (
     parse,
     normalize,
     generate_http_status_metric,
