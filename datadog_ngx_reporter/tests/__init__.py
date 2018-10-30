@@ -58,6 +58,12 @@ class TestNGiNXParse(unittest.TestCase):
 
     def test_extract_tags(self):
         normalized = normalize(self.parsed_log)
-        tags = extract_tags(normalized)
 
+        tags = extract_tags(normalized)
         self.assertTrue('upstream:upstream-name' in tags)
+        self.assertTrue('ip_type:ipv4' in tags)
+
+        tags = extract_tags({
+            'remote_addr': '::1'
+        })
+        self.assertTrue('ip_type:ipv6' in tags)
