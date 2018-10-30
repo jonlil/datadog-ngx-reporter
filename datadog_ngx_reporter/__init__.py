@@ -3,6 +3,7 @@ import time
 import re
 from collections import defaultdict
 from datadog import statsd
+import socket
 
 
 # mapping between datadog and supervisord log levels
@@ -69,13 +70,16 @@ def extract_method(obj):
 
 def extract_tags(obj):
     _tags = []
-    if not obj['proxy_host'] == '-':
-       _tags.append("upstream:{}".format(obj['proxy_host']))
+    if 'proxy_host' in obj and not obj['proxy_host'] == '-':
+        _tags.append("upstream:{}".format(obj['proxy_host']))
+    if 'remote_addr' in obj:
+        _tags.append("ip_type:{}".format(ip_type(obj['remote_addr'])))
     return _tags
 
 
 def is_http_status_loggable(obj):
     return 'status' in obj and (599 <= obj['status'] and 200 >= obj['status'])
+
 
 def get_http_status_metric_name(obj):
     status = obj['status']
@@ -92,11 +96,16 @@ def get_http_status_metric_name(obj):
     return '{}_HUNDRED_STATUS'.format(metric_selector)
 
 
-def should_flush_buffer(buffer):
-    if isinstance(buffer, int):
-        return buffer >= SAMPLE_RATE
-    else:
-        return len(buffer) >= SAMPLE_RATE
+def ip_type(address):
+    try:
+        socket.inet_aton(address)
+        return 'ipv4'
+    except Exception, e:
+        try:
+           socket.inet_pton(socket.AF_INET6, address)
+           return 'ipv6'
+        except Exception, e:
+            pass
 
 
 def generate_http_status_metric(obj):
